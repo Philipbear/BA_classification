@@ -1,7 +1,10 @@
+import numpy as np
 import pandas as pd
 
 
-def filter_data(msms_df, label_df, total_int_pct_50_300=50., amide_only=False):
+def filter_data(msms_df, label_df, feature_names,
+                round_intensity=10, round_intensity_ratio=0.1,
+                total_int_pct_50_300=50., amide_only=False):
     """
     prefilter the data used for classification
     """
@@ -14,6 +17,19 @@ def filter_data(msms_df, label_df, total_int_pct_50_300=50., amide_only=False):
 
     # merge
     df = pd.merge(label_df, msms_df, on='Scans', how='inner')
+
+    # round the intensity
+    round_intensity_idx = [i for i, feature_name in enumerate(feature_names) if feature_name.startswith('frag_') or
+                           feature_name.startswith('nl_')]
+    round_intensity_idx = len(round_intensity_idx)
+    round_int_ratio_idx = [i for i, feature_name in enumerate(feature_names) if feature_name.startswith('fragIntRatio_')]
+    round_int_ratio_idx = len(round_int_ratio_idx)
+
+    for i, row in df.iterrows():
+        feature_arr = row['feature']
+        feature_arr[:round_intensity_idx] = np.round(feature_arr[:round_intensity_idx] / round_intensity) * round_intensity
+        feature_arr[round_int_ratio_idx:] = np.round(feature_arr[round_int_ratio_idx:] / round_intensity_ratio) * round_intensity_ratio
+        df.at[i, 'feature'] = feature_arr
 
     print('Number of spectra:', len(df))
     print('Number of unique labels:', len(df['label'].unique()))
@@ -40,5 +56,4 @@ def reshape_data(df):
 if __name__ == '__main__':
     label_df = pd.read_pickle('data/label_df.pkl')
     msms_df = pd.read_pickle('data/all_msms_feature.pkl')
-    filter_data(msms_df, label_df, total_int_pct_50_300=50., amide_only=False)
-
+    filter_data(msms_df, label_df, np.load('data/feature_names.npy'))

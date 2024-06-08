@@ -45,10 +45,10 @@ def design_ms2_feature(count_cutoff=10):
     print(f'Number of features: {feature_no}')
 
     # generate feature names
-    frag_feature_names = [f'frag_{frag:.2f}' for frag in frag_ls]
-    nl_feature_names = [f'nl_{nl:.2f}' for nl in nl_ls]
-    hnl_feature_names = [f'hnl_{hnl:.2f}' for hnl in hnl_ls]
-    frag_pair_feature_names = [f'fragLogRatio_{frag1:.2f}_{frag2:.2f}' for frag1, frag2 in frag_pair_ls]
+    frag_feature_names = [f'frag_{frag:.1f}' for frag in frag_ls]
+    nl_feature_names = [f'nl_{nl:.1f}' for nl in nl_ls]
+    hnl_feature_names = [f'hnl_{hnl:.1f}' for hnl in hnl_ls]
+    frag_pair_feature_names = [f'fragIntRatio_{frag1:.1f}_{frag2:.1f}' for frag1, frag2 in frag_pair_ls]
 
     feature_names = frag_feature_names + nl_feature_names + hnl_feature_names + frag_pair_feature_names
     np.save('data/feature_names.npy', feature_names)
@@ -103,6 +103,7 @@ def calc_ms2(mz_ls, int_ls, prec_mz, frag_lm=50, frag_um=350,
     :param hnl_lm: float, hnl lower limit
     :param hnl_um: float, hnl upper limit
     """
+    int_ls = 100 * int_ls / int_ls.max()  # normalize
 
     # frag
     frag_idx = (mz_ls > frag_lm) & (mz_ls < frag_um)
@@ -127,9 +128,9 @@ def calc_ms2(mz_ls, int_ls, prec_mz, frag_lm=50, frag_um=350,
                 idx += 1
     hnl_ls = hnl_ls[:idx]
 
-    frag_mz = np.round(frag_mz, 2)
-    nl_mz = np.round(nl_mz, 2)
-    hnl_ls = np.round(hnl_ls, 2)
+    frag_mz = np.round(frag_mz, 1)
+    nl_mz = np.round(nl_mz, 1)
+    hnl_ls = np.round(hnl_ls, 1)
 
     # get the unique frags, nl, hnl
     out_frag_mz = np.unique(frag_mz)
@@ -177,17 +178,14 @@ def calc_ms2_feature(frag_ls, nl_ls, hnl_ls, frag_pair_ls,
         matches = frag_int[frag_mz == frag2]
         frag_int_2 = matches[0] if matches.size > 0 else 0.0
 
-        # log ratio, avoid division by zero
-        if frag_int_1 == 0:
-            frag_pair_feature[i] = -1.0
-        elif frag_int_2 == 0:
-            frag_pair_feature[i] = 1.0
+        # ratio, avoid division by zero
+        if frag_int_2 == 0:
+            frag_pair_feature[i] = 20
         else:
-            log_ratio = np.log10(frag_int_1 / frag_int_2)
+            ratio = frag_int_1 / frag_int_2
             # clip
-            log_ratio = min(log_ratio, 1)
-            log_ratio = max(log_ratio, -1)
-            frag_pair_feature[i] = log_ratio
+            ratio = min(ratio, 20)
+            frag_pair_feature[i] = ratio
 
     return np.concatenate((frag_feature, nl_feature, hnl_feature, frag_pair_feature))
 

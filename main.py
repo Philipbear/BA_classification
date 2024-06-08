@@ -1,3 +1,6 @@
+import graphviz
+from sklearn.tree import export_graphviz
+
 import msms_quality
 import analyze_ms2_library
 import calc_ms2_feature
@@ -54,7 +57,8 @@ def analyze_data(count_cutoff=10):
     return msms_df, label_df, feature_names
 
 
-def prepare_data(total_int_pct_50_300=40., amide_only=False):
+def prepare_data(round_intensity=10, round_intensity_ratio=0.1,
+                 total_int_pct_50_300=40., amide_only=False):
     """
     prepare data for classification
     """
@@ -63,7 +67,9 @@ def prepare_data(total_int_pct_50_300=40., amide_only=False):
     feature_names = np.load('data/feature_names.npy')
 
     # filter the data
-    df = filter_data.filter_data(msms_df, label_df, total_int_pct_50_300=total_int_pct_50_300,
+    df = filter_data.filter_data(msms_df, label_df, feature_names,
+                                 round_intensity=10, round_intensity_ratio=0.1,
+                                 total_int_pct_50_300=total_int_pct_50_300,
                                  amide_only=amide_only)
     X, y, y_label_dict = filter_data.reshape_data(df)
 
@@ -74,7 +80,7 @@ def prepare_data(total_int_pct_50_300=40., amide_only=False):
     return dataset
 
 
-def train_model(use_fragment=True, use_nl=True, use_hnl=True, use_frag_pair_ratio=True,
+def train_model(use_all_data=True, use_fragment=True, use_nl=True, use_hnl=True, use_frag_pair_ratio=True,
                 max_depth=10, min_samples_split=5, min_samples_leaf=3, random_state=24):
     """
     train the model
@@ -83,7 +89,7 @@ def train_model(use_fragment=True, use_nl=True, use_hnl=True, use_frag_pair_rati
 
     # train the model
     model = train_tree.train_tree(dataset,
-                                  use_all_data=True,
+                                  use_all_data=use_all_data,
                                   use_fragment=use_fragment,
                                   use_nl=use_nl,
                                   use_hnl=use_hnl,
@@ -96,11 +102,34 @@ def train_model(use_fragment=True, use_nl=True, use_hnl=True, use_frag_pair_rati
     joblib.dump(model, 'dtree/model.joblib')
 
 
+def plot_tree(max_depth=5):
+    dtree = joblib.load('dtree/model.joblib')
+    dataset = joblib.load('data/dataset.joblib')
+    feature_names = np.load('dtree/feature_names.npy')
+
+    # Alternatively, visualize the decision tree using graphviz
+    dot_data = export_graphviz(dtree, out_file=None,
+                               max_depth=max_depth,
+                               feature_names=feature_names.tolist(),
+                               class_names=list(dataset.label_dict.keys()),
+                               filled=True, rounded=True,
+                               special_characters=True)
+
+    # Create graph from dot data
+    graph = graphviz.Source(dot_data, format="svg")
+    graph.render("dtree/decision_tree_graph")  # Saves the tree to a file
+    graph.view()  # Displays the tree
+
+
 if __name__ == '__main__':
 
-    analyze_data(count_cutoff=10)
+    # analyze_data(count_cutoff=10)
 
-    prepare_data(total_int_pct_50_300=40., amide_only=False)
+    # prepare_data(round_intensity=10, round_intensity_ratio=0.1,
+    #              total_int_pct_50_300=40., amide_only=False)
 
-    train_model(use_fragment=True, use_nl=True, use_hnl=False, use_frag_pair_ratio=True,
-                max_depth=15, min_samples_split=6, min_samples_leaf=3, random_state=24)
+    train_model(use_all_data=True,  # when False, split the data into training and testing sets
+                use_fragment=True, use_nl=False, use_hnl=False, use_frag_pair_ratio=True,
+                max_depth=None, min_samples_split=6, min_samples_leaf=3, random_state=24)
+
+    plot_tree(max_depth=5)

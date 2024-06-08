@@ -14,6 +14,9 @@ def train_tree(dataset, use_all_data=True,
     X = calc_X(dataset, use_fragment, use_nl, use_hnl, use_frag_pair_ratio)
     y = dataset.y
 
+    # save dataset.feature_names
+    np.save('dtree/feature_names.npy', dataset.feature_names)
+
     # Initialize and fit the decision tree classifier
     dtree = DecisionTreeClassifier(random_state=random_state,
                                    max_depth=max_depth,
@@ -44,21 +47,21 @@ def train_tree(dataset, use_all_data=True,
     # save confusion matrix
     cm_df.to_csv('dtree/confusion_matrix.csv')
 
-    # Cross-validate the decision tree
-    cross_validation(dtree, X, y)
+    # # Cross-validate the decision tree
+    # cross_validation(dtree, X, y)
 
     tree_rules = export_text(dtree, feature_names=dataset.feature_names).split('\n')
     print("Decision Tree Rules:")
     for rule in tree_rules:
         print(rule)
 
-    # Visualize the decision tree using matplotlib
-    plt.figure(figsize=(20, 10))
-    plot_tree(dtree, feature_names=dataset.feature_names.tolist(),
-              class_names=list(dataset.label_dict.keys()), filled=True)
-    plt.title('Decision Tree')
-    plt.savefig('dtree/decision_tree.svg', format='svg', bbox_inches='tight', transparent=True)
-    plt.show()
+    # # Visualize the decision tree using matplotlib
+    # plt.figure(figsize=(20, 10))
+    # plot_tree(dtree, feature_names=dataset.feature_names.tolist(), max_depth=5,
+    #           class_names=list(dataset.label_dict.keys()), filled=True)
+    # plt.title('Decision Tree')
+    # plt.savefig('dtree/decision_tree_depth5.svg', format='svg', bbox_inches='tight', transparent=True)
+    # plt.show()
     return dtree
 
 

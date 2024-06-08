@@ -151,9 +151,9 @@ def calc_ms2(mz_ls, int_ls, prec_mz, top_n=50, rel_int_cutoff=0.05,
                 idx += 1
     hnl_ls = hnl_ls[:idx]
 
-    frag_ls = np.round(frag_ls, 2)
-    nl_ls = np.round(nl_ls, 2)
-    hnl_ls = np.round(hnl_ls, 2)
+    frag_ls = np.round(frag_ls, 1)
+    nl_ls = np.round(nl_ls, 1)
+    hnl_ls = np.round(hnl_ls, 1)
 
     # get the unique frags, nl, hnl
     frag_ls = np.unique(frag_ls)
