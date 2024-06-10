@@ -35,7 +35,19 @@ def filter_data(msms_df, label_df, feature_names,
     print('Number of unique labels:', len(df['label'].unique()))
     print('Number of unique compounds:', len(df['INCHI'].unique()))
 
-    return df[['feature', 'label']]
+    # df OH cnt: how many ',' in the label
+    df['OH_cnt'] = 0
+    for i, row in df.iterrows():
+        _label = row['label']
+        if _label == 'No OH':
+            _cnt = 0
+        elif ',' in _label:
+            _cnt = _label.count(',') + 1
+        else:
+            _cnt = 1
+        df.at[i, 'OH_cnt'] = _cnt
+
+    return df
 
 
 def reshape_data(df):

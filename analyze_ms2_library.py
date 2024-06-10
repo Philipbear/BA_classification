@@ -60,7 +60,7 @@ def analyze_all_ms2(df):
     np.save('data/frag_pair_counts.npy', frag_pair_counts)
 
 
-def print_stats():
+def print_stats(print_topn=50):
     frag_ls = np.load('data/frag_ls.npy')
     frag_counts = np.load('data/frag_counts.npy')
     nl_ls = np.load('data/nl_ls.npy')
@@ -82,8 +82,8 @@ def print_stats():
     print(f'Number of unique frag pairs: {len(frag_pair_ls)}')
     print(f'Number of unique frag pairs with counts > 10: {np.sum(frag_pair_counts > 10)}')
 
-    # print top 50 frag pairs
-    for i in range(50):
+    # print top frag pairs
+    for i in range(print_topn):
         print(f'{frag_pair_ls[i][0]}-{frag_pair_ls[i][1]}: {frag_pair_counts[i]}')
 
 

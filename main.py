@@ -41,6 +41,7 @@ def analyze_data(count_cutoff=10):
     analyze data
     """
     # generate msms df, analyze msms quality
+    # calculate intensity % of the peaks in mz 50-300
     msms_df = msms_quality.analyze_spec_quality('data/BA_Spectra_for_FDR_2.mgf')
 
     # analyze the ms2 library, to find common frag, nl, hnl, frag pairs
@@ -68,68 +69,121 @@ def prepare_data(round_intensity=10, round_intensity_ratio=0.1,
 
     # filter the data
     df = filter_data.filter_data(msms_df, label_df, feature_names,
-                                 round_intensity=10, round_intensity_ratio=0.1,
+                                 round_intensity=round_intensity, round_intensity_ratio=round_intensity_ratio,
                                  total_int_pct_50_300=total_int_pct_50_300,
                                  amide_only=amide_only)
-    X, y, y_label_dict = filter_data.reshape_data(df)
 
-    # save the dataset
+    # save the entire dataset
+    X, y, y_label_dict = filter_data.reshape_data(df)
     dataset = MLDataset(X, y, feature_names, y_label_dict)
     joblib.dump(dataset, 'data/dataset.joblib')
 
-    return dataset
+    # split the data into OH specific datasets
+    for i in range(1, 4):
+        df_specific = df[df['OH_cnt'] == i]
+        X, y, y_label_dict = filter_data.reshape_data(df_specific)
+        dataset_specific = MLDataset(X, y, feature_names, y_label_dict)
+        joblib.dump(dataset_specific, f'data/dataset_{i}.joblib')
+
+    return
 
 
-def train_model(use_all_data=True, use_fragment=True, use_nl=True, use_hnl=True, use_frag_pair_ratio=True,
+def train_model(oh_specific=False,
+                use_all_data=True, test_size=0.25,
+                use_fragment=True, use_nl=True, use_hnl=True, use_frag_pair_ratio=True,
                 max_depth=10, min_samples_split=5, min_samples_leaf=3, random_state=24):
     """
     train the model
     """
-    dataset = joblib.load('data/dataset.joblib')
 
     # train the model
-    model = train_tree.train_tree(dataset,
-                                  use_all_data=use_all_data,
-                                  use_fragment=use_fragment,
-                                  use_nl=use_nl,
-                                  use_hnl=use_hnl,
-                                  use_frag_pair_ratio=use_frag_pair_ratio,
-                                  max_depth=max_depth, min_samples_split=min_samples_split,
-                                  min_samples_leaf=min_samples_leaf,
-                                  random_state=random_state)
+    if not oh_specific:
+        dataset = joblib.load('data/dataset.joblib')
+        model = train_tree.train_tree(dataset,
+                                      oh_specific=None,
+                                      use_all_data=use_all_data,
+                                      test_size=test_size,
+                                      use_fragment=use_fragment,
+                                      use_nl=use_nl,
+                                      use_hnl=use_hnl,
+                                      use_frag_pair_ratio=use_frag_pair_ratio,
+                                      max_depth=max_depth, min_samples_split=min_samples_split,
+                                      min_samples_leaf=min_samples_leaf,
+                                      random_state=random_state)
 
-    # save the model
-    joblib.dump(model, 'dtree/model.joblib')
+        # save the model
+        joblib.dump(model, 'dtree/model.joblib')
+    else:
+        # train OH specific models
+        for i in range(1, 4):
+
+            dataset = joblib.load(f'data/dataset_{i}.joblib')
+            model = train_tree.train_tree(dataset,
+                                          oh_specific=i,
+                                          use_all_data=use_all_data,
+                                          test_size=test_size,
+                                          use_fragment=use_fragment,
+                                          use_nl=use_nl,
+                                          use_hnl=use_hnl,
+                                          use_frag_pair_ratio=use_frag_pair_ratio,
+                                          max_depth=max_depth, min_samples_split=min_samples_split,
+                                          min_samples_leaf=min_samples_leaf,
+                                          random_state=random_state)
+
+            # save the model
+            joblib.dump(model, f'dtree/model_{i}.joblib')
 
 
-def plot_tree(max_depth=5):
-    dtree = joblib.load('dtree/model.joblib')
-    dataset = joblib.load('data/dataset.joblib')
-    feature_names = np.load('dtree/feature_names.npy')
+def plot_tree(oh_specific=False, max_depth=5):
 
-    # Alternatively, visualize the decision tree using graphviz
-    dot_data = export_graphviz(dtree, out_file=None,
-                               max_depth=max_depth,
-                               feature_names=feature_names.tolist(),
-                               class_names=list(dataset.label_dict.keys()),
-                               filled=True, rounded=True,
-                               special_characters=True)
+    if not oh_specific:
+        dtree = joblib.load('dtree/model.joblib')
+        dataset = joblib.load('data/dataset.joblib')
+        feature_names = np.load('dtree/feature_names.npy')
 
-    # Create graph from dot data
-    graph = graphviz.Source(dot_data, format="svg")
-    graph.render("dtree/decision_tree_graph")  # Saves the tree to a file
-    graph.view()  # Displays the tree
+        # Alternatively, visualize the decision tree using graphviz
+        dot_data = export_graphviz(dtree, out_file=None,
+                                   max_depth=max_depth,
+                                   feature_names=feature_names.tolist(),
+                                   class_names=list(dataset.label_dict.keys()),
+                                   filled=True, rounded=True,
+                                   special_characters=True)
+
+        # Create graph from dot data
+        graph = graphviz.Source(dot_data, format="svg")
+        graph.render("dtree/decision_tree_graph")  # Saves the tree to a file
+        graph.view()  # Displays the tree
+
+    else:
+        for i in range(1, 4):
+            dtree = joblib.load(f'dtree/model_{i}.joblib')
+            dataset = joblib.load(f'data/dataset_{i}.joblib')
+            feature_names = np.load(f'dtree/feature_names_{i}.npy')
+
+            # Alternatively, visualize the decision tree using graphviz
+            dot_data = export_graphviz(dtree, out_file=None,
+                                       max_depth=max_depth,
+                                       feature_names=feature_names.tolist(),
+                                       class_names=list(dataset.label_dict.keys()),
+                                       filled=True, rounded=True,
+                                       special_characters=True)
+
+            # Create graph from dot data
+            graph = graphviz.Source(dot_data, format="svg")
+            graph.render(f"dtree/decision_tree_graph_{i}")
 
 
 if __name__ == '__main__':
 
     # analyze_data(count_cutoff=10)
 
-    # prepare_data(round_intensity=10, round_intensity_ratio=0.1,
+    # prepare_data(round_intensity=1, round_intensity_ratio=0.01,
     #              total_int_pct_50_300=40., amide_only=False)
 
-    train_model(use_all_data=True,  # when False, split the data into training and testing sets
+    train_model(oh_specific=True,  # whether to train OH specific model (mono OH, di OH, tri OH)
+                use_all_data=True,  # when False, split the data into training and testing sets
+                test_size=0.2,  # test size when use_all_data=False
                 use_fragment=True, use_nl=False, use_hnl=False, use_frag_pair_ratio=True,
-                max_depth=None, min_samples_split=6, min_samples_leaf=3, random_state=24)
+                max_depth=None, min_samples_split=10, min_samples_leaf=5, random_state=24)
 
-    plot_tree(max_depth=5)
+    plot_tree(oh_specific=True, max_depth=None)

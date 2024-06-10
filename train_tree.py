@@ -6,16 +6,20 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 
-def train_tree(dataset, use_all_data=True,
+def train_tree(dataset, oh_specific=None,
+               use_all_data=True, test_size=0.25,
                use_fragment=True, use_nl=True, use_hnl=True, use_frag_pair_ratio=True,
                max_depth=10, min_samples_split=5, min_samples_leaf=3, random_state=24):
+
+    print('OH Specific:', oh_specific)
 
     # Get the data
     X = calc_X(dataset, use_fragment, use_nl, use_hnl, use_frag_pair_ratio)
     y = dataset.y
 
     # save dataset.feature_names
-    np.save('dtree/feature_names.npy', dataset.feature_names)
+    feature_name_file = 'dtree/feature_names.npy' if oh_specific is None else f'dtree/feature_names_{oh_specific}.npy'
+    np.save(feature_name_file, dataset.feature_names)
 
     # Initialize and fit the decision tree classifier
     dtree = DecisionTreeClassifier(random_state=random_state,
@@ -30,7 +34,8 @@ def train_tree(dataset, use_all_data=True,
         y_pred = dtree.predict(X)
     else:
         # Split the data into training and testing sets
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=random_state)
+        X_train, X_test, y_train, y_test = train_test_split(X, y,
+                                                            test_size=test_size, random_state=random_state)
         dtree.fit(X_train, y_train)
         _y = y_test  # y_true
         y_pred = dtree.predict(X_test)
@@ -45,7 +50,8 @@ def train_tree(dataset, use_all_data=True,
     print("Confusion Matrix:")
     print(cm_df)
     # save confusion matrix
-    cm_df.to_csv('dtree/confusion_matrix.csv')
+    file_name = 'dtree/confusion_matrix.npy' if oh_specific is None else f'dtree/confusion_matrix_{oh_specific}.npy'
+    cm_df.to_csv(file_name, index=False)
 
     # # Cross-validate the decision tree
     # cross_validation(dtree, X, y)
