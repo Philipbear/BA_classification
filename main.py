@@ -49,23 +49,27 @@ def analyze_data(count_cutoff=10):
     analyze_ms2_library.print_stats()
 
     # design and calculate ms2 features
-    feature_names = calc_ms2_feature.design_ms2_feature(count_cutoff=count_cutoff)
-    msms_df = calc_ms2_feature.calc_all_ms2_feature(msms_df)  # all_msms_feature.pkl
+    calc_ms2_feature.design_ms2_feature(count_cutoff=count_cutoff)
+    calc_ms2_feature.calc_all_ms2_feature(msms_df)  # all_msms_feature.pkl
 
     # process BA labels
-    label_df = process_BA_labels.process_ba_labels('data/BA_Spectra_for_FDR_names_labelled.csv')  # label_df.pkl
+    process_BA_labels.process_ba_labels('data/BA_Spectra_for_FDR_names_labelled.csv')  # label_df.pkl
 
-    return msms_df, label_df, feature_names
+    return
 
 
-def prepare_data(round_intensity=10, round_intensity_ratio=0.1,
+def prepare_data(stereochem=True, round_intensity=10, round_intensity_ratio=0.1,
                  total_int_pct_50_300=40., amide_only=False):
     """
     prepare data for classification
     """
     msms_df = pd.read_pickle('data/all_msms_feature.pkl')
-    label_df = pd.read_pickle('data/label_df.pkl')
     feature_names = np.load('data/feature_names.npy')
+
+    if stereochem:
+        label_df = pd.read_pickle('data/label_df_stereo.pkl')
+    else:
+        label_df = pd.read_pickle('data/label_df.pkl')
 
     # filter the data
     df = filter_data.filter_data(msms_df, label_df, feature_names,

@@ -53,7 +53,7 @@ def design_ms2_feature(count_cutoff=10):
     feature_names = frag_feature_names + nl_feature_names + hnl_feature_names + frag_pair_feature_names
     np.save('data/feature_names.npy', feature_names)
 
-    return feature_names
+    return
 
 
 def calc_all_ms2_feature(df):
@@ -85,7 +85,7 @@ def calc_all_ms2_feature(df):
     # save
     df.to_pickle('data/all_msms_feature.pkl')
 
-    return df
+    return
 
 
 @njit(cache=True)
