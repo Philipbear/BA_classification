@@ -79,7 +79,7 @@ def prepare_data(round_intensity=10, round_intensity_ratio=0.1,
     joblib.dump(dataset, 'data/dataset.joblib')
 
     # split the data into OH specific datasets
-    for i in range(1, 4):
+    for i in range(1, 5):
         df_specific = df[df['OH_cnt'] == i]
         X, y, y_label_dict = filter_data.reshape_data(df_specific)
         dataset_specific = MLDataset(X, y, feature_names, y_label_dict)
@@ -115,7 +115,7 @@ def train_model(oh_specific=False,
         joblib.dump(model, 'dtree/model.joblib')
     else:
         # train OH specific models
-        for i in range(1, 4):
+        for i in range(1, 5):
 
             dataset = joblib.load(f'data/dataset_{i}.joblib')
             model = train_tree.train_tree(dataset,
@@ -155,7 +155,7 @@ def plot_tree(oh_specific=False, max_depth=5):
         graph.view()  # Displays the tree
 
     else:
-        for i in range(1, 4):
+        for i in range(1, 5):
             dtree = joblib.load(f'dtree/model_{i}.joblib')
             dataset = joblib.load(f'data/dataset_{i}.joblib')
             feature_names = np.load(f'dtree/feature_names_{i}.npy')
@@ -175,15 +175,15 @@ def plot_tree(oh_specific=False, max_depth=5):
 
 if __name__ == '__main__':
 
-    # analyze_data(count_cutoff=10)
+    analyze_data(count_cutoff=10)
 
-    # prepare_data(round_intensity=1, round_intensity_ratio=0.01,
-    #              total_int_pct_50_300=40., amide_only=False)
+    prepare_data(round_intensity=1, round_intensity_ratio=0.01,
+                 total_int_pct_50_300=40., amide_only=False)
 
     train_model(oh_specific=True,  # whether to train OH specific model (mono OH, di OH, tri OH)
                 use_all_data=True,  # when False, split the data into training and testing sets
                 test_size=0.2,  # test size when use_all_data=False
                 use_fragment=True, use_nl=False, use_hnl=False, use_frag_pair_ratio=True,
-                max_depth=None, min_samples_split=10, min_samples_leaf=5, random_state=24)
+                max_depth=5, min_samples_split=10, min_samples_leaf=5, random_state=24)
 
     plot_tree(oh_specific=True, max_depth=None)

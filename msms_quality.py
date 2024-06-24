@@ -62,11 +62,16 @@ def calc_spec_quality(mz_ls, int_ls, mz_range=(50, 300)):
 
 
 def analyze_spec_quality(library_mgf):
+
     df = generate_library_df(library_mgf)
+
     # remove column: SCANS
     df = df.drop(columns=['SCANS'])
+
     # add col: Scans, from 1 to len(df)
     df['Scans'] = range(1, len(df) + 1)
+
+    # assess the quality of the spectra
     df['50_300_int_pct'] = df.apply(lambda x: calc_spec_quality(x['mz_ls'], x['intensity_ls']), axis=1)
 
     # write to pkl and tsv
