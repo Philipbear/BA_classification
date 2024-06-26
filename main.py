@@ -36,7 +36,7 @@ class MLDataset:
                 self.frag_pair_feature += 1
 
 
-def analyze_data(count_cutoff=10):
+def analyze_data(count_cutoff=10, top_n=50, rel_int_cutoff=0.01, frag_lm=150, frag_um=350):
     """
     analyze data
     """
@@ -45,15 +45,17 @@ def analyze_data(count_cutoff=10):
     msms_df = msms_quality.analyze_spec_quality('data/BA_Spectra_for_FDR_2.mgf')
 
     # analyze the ms2 library, to find common frag, nl, hnl, frag pairs
-    analyze_ms2_library.analyze_all_ms2(msms_df)
+    analyze_ms2_library.analyze_all_ms2(msms_df, top_n=top_n, rel_int_cutoff=rel_int_cutoff,
+                                        frag_lm=frag_lm, frag_um=frag_um)
     analyze_ms2_library.print_stats()
 
     # design and calculate ms2 features
     calc_ms2_feature.design_ms2_feature(count_cutoff=count_cutoff)
-    calc_ms2_feature.calc_all_ms2_feature(msms_df)  # all_msms_feature.pkl
+    calc_ms2_feature.calc_all_ms2_feature(msms_df, frag_lm=frag_lm, frag_um=frag_um)  # all_msms_feature.pkl
 
     # process BA labels
     process_BA_labels.process_ba_labels('data/BA_Spectra_for_FDR_names_labelled.csv')  # label_df.pkl
+    process_BA_labels.process_ba_labels_stereo('data/BA_Spectra_for_FDR_names_labelled.csv')  # label_df.pkl
 
     return
 
@@ -80,19 +82,21 @@ def prepare_data(stereochem=True, round_intensity=10, round_intensity_ratio=0.1,
     # save the entire dataset
     X, y, y_label_dict = filter_data.reshape_data(df)
     dataset = MLDataset(X, y, feature_names, y_label_dict)
-    joblib.dump(dataset, 'data/dataset.joblib')
+    dataset_name = 'data/dataset.joblib' if not stereochem else 'data/dataset_stereo.joblib'
+    joblib.dump(dataset, dataset_name)
 
     # split the data into OH specific datasets
     for i in range(1, 5):
         df_specific = df[df['OH_cnt'] == i]
         X, y, y_label_dict = filter_data.reshape_data(df_specific)
         dataset_specific = MLDataset(X, y, feature_names, y_label_dict)
-        joblib.dump(dataset_specific, f'data/dataset_{i}.joblib')
+        dataset_specific_name = f'data/dataset_{i}.joblib' if not stereochem else f'data/dataset_{i}_stereo.joblib'
+        joblib.dump(dataset_specific, dataset_specific_name)
 
     return
 
 
-def train_model(oh_specific=False,
+def train_model(oh_specific=False, stereochem=True,
                 use_all_data=True, test_size=0.25,
                 use_fragment=True, use_nl=True, use_hnl=True, use_frag_pair_ratio=True,
                 max_depth=10, min_samples_split=5, min_samples_leaf=3, random_state=24):
@@ -102,7 +106,8 @@ def train_model(oh_specific=False,
 
     # train the model
     if not oh_specific:
-        dataset = joblib.load('data/dataset.joblib')
+        dataset_name = 'data/dataset.joblib' if not stereochem else 'data/dataset_stereo.joblib'
+        dataset = joblib.load(dataset_name)
         model = train_tree.train_tree(dataset,
                                       oh_specific=None,
                                       use_all_data=use_all_data,
@@ -116,12 +121,13 @@ def train_model(oh_specific=False,
                                       random_state=random_state)
 
         # save the model
-        joblib.dump(model, 'dtree/model.joblib')
+        model_name = 'dtree/stereo/model.joblib' if stereochem else 'dtree/non_stereo/model.joblib'
+        joblib.dump(model, model_name)
     else:
         # train OH specific models
         for i in range(1, 5):
-
-            dataset = joblib.load(f'data/dataset_{i}.joblib')
+            dataset_name = f'data/dataset_{i}.joblib' if not stereochem else f'data/dataset_{i}_stereo.joblib'
+            dataset = joblib.load(dataset_name)
             model = train_tree.train_tree(dataset,
                                           oh_specific=i,
                                           use_all_data=use_all_data,
@@ -135,14 +141,16 @@ def train_model(oh_specific=False,
                                           random_state=random_state)
 
             # save the model
-            joblib.dump(model, f'dtree/model_{i}.joblib')
+            model_name = f'dtree/stereo/model_{i}.joblib' if stereochem else f'dtree/non_stereo/model_{i}.joblib'
+            joblib.dump(model, model_name)
 
 
-def plot_tree(oh_specific=False, max_depth=5):
-
+def plot_tree(oh_specific=False, stereochem=True, max_depth=None):
     if not oh_specific:
-        dtree = joblib.load('dtree/model.joblib')
-        dataset = joblib.load('data/dataset.joblib')
+        model_name = 'dtree/stereo/model.joblib' if stereochem else 'dtree/non_stereo/model.joblib'
+        dataset_name = 'data/dataset.joblib' if not stereochem else 'data/dataset_stereo.joblib'
+        dtree = joblib.load(model_name)
+        dataset = joblib.load(dataset_name)
         feature_names = np.load('dtree/feature_names.npy')
 
         # Alternatively, visualize the decision tree using graphviz
@@ -155,13 +163,16 @@ def plot_tree(oh_specific=False, max_depth=5):
 
         # Create graph from dot data
         graph = graphviz.Source(dot_data, format="svg")
-        graph.render("dtree/decision_tree_graph")  # Saves the tree to a file
+        out_graph = f"dtree/stereo/decision_tree_graph" if stereochem else f"dtree/non_stereo/decision_tree_graph"
+        graph.render(out_graph)  # Saves the tree to a file
         graph.view()  # Displays the tree
 
     else:
         for i in range(1, 5):
-            dtree = joblib.load(f'dtree/model_{i}.joblib')
-            dataset = joblib.load(f'data/dataset_{i}.joblib')
+            model_name = f'dtree/stereo/model_{i}.joblib' if stereochem else f'dtree/non_stereo/model_{i}.joblib'
+            dataset_name = f'data/dataset_{i}.joblib' if not stereochem else f'data/dataset_{i}_stereo.joblib'
+            dtree = joblib.load(model_name)
+            dataset = joblib.load(dataset_name)
             feature_names = np.load(f'dtree/feature_names_{i}.npy')
 
             # Alternatively, visualize the decision tree using graphviz
@@ -174,20 +185,26 @@ def plot_tree(oh_specific=False, max_depth=5):
 
             # Create graph from dot data
             graph = graphviz.Source(dot_data, format="svg")
-            graph.render(f"dtree/decision_tree_graph_{i}")
+            out_graph = f"dtree/stereo/decision_tree_graph_{i}" if stereochem else f"dtree/non_stereo/decision_tree_graph_{i}"
+            graph.render(out_graph)
 
 
 if __name__ == '__main__':
 
-    analyze_data(count_cutoff=10)
+    OH_specific = True
+    stereo_chem = True
 
-    prepare_data(round_intensity=1, round_intensity_ratio=0.01,
-                 total_int_pct_50_300=40., amide_only=False)
+    # analyze_data(count_cutoff=10, top_n=50, rel_int_cutoff=0.01, frag_lm=150, frag_um=350)
+    #
+    # prepare_data(stereochem=stereo_chem,
+    #              round_intensity=1, round_intensity_ratio=0.01,
+    #              total_int_pct_50_300=40., amide_only=False)
 
-    train_model(oh_specific=True,  # whether to train OH specific model (mono OH, di OH, tri OH)
+    train_model(oh_specific=OH_specific,  # whether to train OH specific model (mono OH, di OH, tri OH)
+                stereochem=stereo_chem,  # whether to consider stereochemistry
                 use_all_data=True,  # when False, split the data into training and testing sets
                 test_size=0.2,  # test size when use_all_data=False
                 use_fragment=True, use_nl=False, use_hnl=False, use_frag_pair_ratio=True,
-                max_depth=5, min_samples_split=10, min_samples_leaf=5, random_state=24)
+                max_depth=10, min_samples_split=10, min_samples_leaf=5, random_state=24)
 
-    plot_tree(oh_specific=True, max_depth=None)
+    plot_tree(oh_specific=OH_specific, stereochem=stereo_chem)

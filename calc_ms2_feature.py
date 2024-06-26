@@ -56,7 +56,7 @@ def design_ms2_feature(count_cutoff=10):
     return
 
 
-def calc_all_ms2_feature(df):
+def calc_all_ms2_feature(df, frag_lm=150, frag_um=350):
     """
     calculate the frag, nl, hnl array for all ms2 spectra
     """
@@ -73,7 +73,7 @@ def calc_all_ms2_feature(df):
         int_ls = np.array(row['intensity_ls'])
         prec_mz = float(row['PEPMASS'])
         this_frag_mz, this_frag_int, this_nl_mz, this_nl_int, this_hnl_ls = calc_ms2(mz_ls, int_ls, prec_mz,
-                                                                                     frag_lm=50, frag_um=350,
+                                                                                     frag_lm=frag_lm, frag_um=frag_um,
                                                                                      nl_lm=30, nl_um=350, hnl_lm=30,
                                                                                      hnl_um=350)
         this_feature = calc_ms2_feature(frag_ls, nl_ls, hnl_ls, frag_pair_ls,
@@ -180,11 +180,11 @@ def calc_ms2_feature(frag_ls, nl_ls, hnl_ls, frag_pair_ls,
 
         # ratio, avoid division by zero
         if frag_int_2 == 0:
-            frag_pair_feature[i] = 20
+            frag_pair_feature[i] = 50
         else:
             ratio = frag_int_1 / frag_int_2
             # clip
-            ratio = min(ratio, 20)
+            ratio = min(ratio, 50)
             frag_pair_feature[i] = ratio
 
     return np.concatenate((frag_feature, nl_feature, hnl_feature, frag_pair_feature))

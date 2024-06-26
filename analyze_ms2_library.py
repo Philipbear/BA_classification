@@ -8,7 +8,7 @@ from numba import njit
 from tqdm import tqdm
 
 
-def analyze_all_ms2(df):
+def analyze_all_ms2(df, top_n=50, rel_int_cutoff=0.01, frag_lm=150, frag_um=350):
     """
     analyze all the ms2 spectra, retrieve most common frags, NLs, and HNLs
     """
@@ -22,8 +22,9 @@ def analyze_all_ms2(df):
         mz_ls = np.array(row['mz_ls'])
         int_ls = np.array(row['intensity_ls'])
         prec_mz = float(row['PEPMASS'])
-        frag_ls, nl_ls, hnl_ls, frag_pair_ls = calc_ms2(mz_ls, int_ls, prec_mz, top_n=50, rel_int_cutoff=0.05,
-                                                        frag_lm=50, frag_um=350,
+        frag_ls, nl_ls, hnl_ls, frag_pair_ls = calc_ms2(mz_ls, int_ls, prec_mz,
+                                                        top_n=top_n, rel_int_cutoff=rel_int_cutoff,
+                                                        frag_lm=frag_lm, frag_um=frag_um,
                                                         nl_lm=30, nl_um=350, hnl_lm=30, hnl_um=350)
         all_frag_ls = np.append(all_frag_ls, frag_ls)
         all_nl_ls = np.append(all_nl_ls, nl_ls)
