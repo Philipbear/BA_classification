@@ -1,3 +1,89 @@
 import pandas as pd
 
+mono_group_container = {
+    '3-OH': ['3a', '3b'],
+    '3a-OH': ['3a'],
+    '7a-OH': ['7a'],
+    '7b-OH': ['7b'],
+}
 
+
+di_group_container = {
+    # '1-OH-Sidechain; 1-OH-core': ['3a', '3b'],
+    '1-ketone': ['3keto', '6keto', '7keto', '12keto'],
+    '3,12a-OH; 7,12a-OH': ['3a12a', '3b12a', '7a12a', '7b12a'],
+    '3,12a-OH': ['3a12a', '3b12a'],
+    '7,12a-OH': ['7a12a', '7b12a'],
+    '3,7-OH; 3,6-OH; 3,12b-OH; 7,12b-OH': ['3a7a', '3b7a', '3b7a', '3b7b', '3a6a', '3a6b', '3b6a', '3b6b', '3a12b', '3b12b', '7a12b', '7b12b'],
+    '3,7-OH; 3,12b-OH; 7,12b-OH': ['3a7a', '3b7a', '3a12b', '3b12b', '7a12b', '7b12b'],
+    '3,6-OH': ['3a6a', '3a6b', '3b6a', '3b6b'],
+    '3,7-OH': ['3a7a', '3a7b', '3b7a', '3b7b'],
+    '3,12b-OH; 7,12b-OH': ['3a12b', '3b12b', '7a12b', '7b12b'],
+}
+
+
+tri_group_container = {
+    '3-OH': ['3a', '3b'],
+    '3a-OH': ['3a'],
+    '7a-OH': ['7a'],
+    '7b-OH': ['7b'],
+}
+
+
+def main_evaluation(group='mono'):
+
+    if group == 'mono':
+        group_container = mono_group_container
+    elif group == 'di':
+        group_container = di_group_container
+    elif group == 'tri':
+        group_container = tri_group_container
+
+    bile19_df = pd.read_csv('data/label/bilelib19_df.tsv', sep='\t')
+    new_core_df = pd.read_csv('data/label/new_core_df.tsv', sep='\t')
+
+    group_name = f'{group}hydroxy'
+    group_name = group_name[0].upper() + group_name[1:]
+
+    bile19_df = bile19_df[bile19_df[group_name] == 1].reset_index(drop=True)
+    new_core_df = new_core_df[new_core_df[group_name] == 1].reset_index(drop=True)
+    out_list = []
+    for _group, group_ls in group_container.items():
+        if not isinstance(group_ls, list):
+            group_ls = [group_ls]
+
+        bile19_ground_truth = bile19_df['group'].apply(
+            lambda x: 1 if x and any(g == str(x) for g in group_ls) else 0).values
+        bile19_prediction = bile19_df[_group].values
+
+        bile19_TP = sum((bile19_ground_truth == 1) & (bile19_prediction == 1))
+        bile19_FP = sum((bile19_ground_truth == 0) & (bile19_prediction == 1))
+        bile19_TN = sum((bile19_ground_truth == 0) & (bile19_prediction == 0))
+        bile19_FN = sum((bile19_ground_truth == 1) & (bile19_prediction == 0))
+
+        new_core_ground_truth = new_core_df['group'].apply(lambda x: 1 if any(g in str(x) for g in group_ls) else 0)
+        new_core_prediction = new_core_df[_group]
+
+        new_core_TP = sum((new_core_ground_truth == 1) & (new_core_prediction == 1))
+        new_core_FP = sum((new_core_ground_truth == 0) & (new_core_prediction == 1))
+        new_core_TN = sum((new_core_ground_truth == 0) & (new_core_prediction == 0))
+        new_core_FN = sum((new_core_ground_truth == 1) & (new_core_prediction == 0))
+
+        out_list.append([_group, bile19_TP, bile19_FP, bile19_TN, bile19_FN,
+                         new_core_TP, new_core_FP, new_core_TN, new_core_FN,
+                         bile19_TP + new_core_TP, bile19_FP + new_core_FP, bile19_TN + new_core_TN,
+                         bile19_FN + new_core_FN])
+
+    out_df = pd.DataFrame(out_list, columns=['group', 'bile19_TP', 'bile19_FP', 'bile19_TN', 'bile19_FN',
+                                             'new_core_TP', 'new_core_FP', 'new_core_TN', 'new_core_FN',
+                                             'total_TP', 'total_FP', 'total_TN', 'total_FN'])
+    out_df['total_FDR'] = out_df['total_FP'] / (out_df['total_FP'] + out_df['total_TP'])
+    out_df['total_FNR'] = out_df['total_FN'] / (out_df['total_FN'] + out_df['total_TP'])
+
+    out_df.to_csv(f'data/result/{group}_evaluation.tsv', sep='\t', index=False)
+
+
+if __name__ == '__main__':
+    # main_evaluation('mono')
+
+    main_evaluation('di')

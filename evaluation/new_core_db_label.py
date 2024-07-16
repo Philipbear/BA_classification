@@ -6,7 +6,7 @@ def get_label():
     Get the label of the library
     """
     # read the library
-    df = pd.read_csv('data/label/new_core_corrected_massql.tsv', sep='\t')
+    df = pd.read_csv('data/new_core_corrected_massql.tsv', sep='\t')
 
     # at least pass mono/di/tri MSQL
     df = df[(df['Monohydroxy'] == 1) | (df['Dihydroxy'] == 1) | (df['Trihydroxy'] == 1)].reset_index(drop=True)
@@ -21,6 +21,9 @@ def get_label():
 
     df['group'] = df['group'].apply(lambda x: x.replace('beta', 'b'))
     df['group'] = df['group'].apply(lambda x: x.replace('alpha', 'a'))
+
+    # rename 3keta7a to 3keto7a
+    df['group'] = df['group'].apply(lambda x: x.replace('keta', 'keto'))
 
     # save the result
     df.to_csv('data/label/new_core_df.tsv', sep='\t', index=False)
@@ -59,7 +62,7 @@ def get_label():
 3a7a12b         92
 3b7b12b         92
 3a7a16a         85
-3keta7a         68
+3keto7a         68
 3a7keto         28
 3a7bDelta22     24
 3a7b            22

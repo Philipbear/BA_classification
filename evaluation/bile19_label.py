@@ -10,7 +10,7 @@ import pandas as pd
 
 def process_unique_smiles():
 
-    df = pd.read_csv('data/label/BILELIB19_Names_ok_labaled_IM.csv')
+    df = pd.read_csv('data/BILELIB19_Names_ok_labaled_IM.csv')
 
     # dereplicate
     df = df.drop_duplicates(subset=['SMILES']).reset_index(drop=True)
@@ -48,6 +48,8 @@ def get_label():
 
     # at least pass mono/di/tri MSQL
     df = df[(df['Monohydroxy'] == 1) | (df['Dihydroxy'] == 1) | (df['Trihydroxy'] == 1)].reset_index(drop=True)
+
+    df.to_csv('data/label/bilelib19_df.tsv', sep='\t', index=False)
 
     print(df['group'][df['Monohydroxy'] == 1].value_counts())
     '''

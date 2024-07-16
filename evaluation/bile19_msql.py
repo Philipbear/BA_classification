@@ -5,6 +5,10 @@ from massql import msql_engine
 
 ALL_MASSQL_QUERIES = {
     'Monohydroxy': "QUERY scaninfo(MS2DATA) WHERE MS2PROD=341.28:TOLERANCEMZ=0.01:INTENSITYPERCENT=2 AND MS2PROD=323.27:TOLERANCEMZ=0.01:INTENSITYPERCENT=2 AND MS2PREC=X AND MS2PROD=X-358.2871:TOLERANCEMZ=0.01:INTENSITYPERCENT=2",
+    '3-OH': "QUERY scaninfo(MS2DATA) WHERE MS2PROD=259.2050:TOLERANCEPPM=20:INTENSITYPERCENT=10",
+    '3a-OH': "QUERY scaninfo(MS2DATA) WHERE MS2MZ=177.127:TOLERANCEPPM=20:INTENSITYPERCENT=10:INTENSITYMATCH=Y:INTENSITYMATCHREFERENCE AND MS2MZ=241.194:TOLERANCEPPM=20:INTENSITYMATCH>Y*0.5:INTENSITYMATCHPERCENT=20",
+    '7a-OH': "QUERY scaninfo(MS2DATA) WHERE MS2MZ=161.09:TOLERANCEPPM=5:INTENSITYPERCENT=0.1",
+    '7b-OH': "QUERY scaninfo(MS2DATA) WHERE MS2MZ=177.127:TOLERANCEPPM=20:INTENSITYPERCENT=10:INTENSITYMATCH=Y:INTENSITYMATCHREFERENCE AND MS2MZ=241.194:TOLERANCEPPM=20:INTENSITYMATCH<Y*0.2:INTENSITYMATCHPERCENT=30",
 
     # dihydroxy
     'Dihydroxy': "QUERY scaninfo(MS2DATA) WHERE MS2PROD=339.27:TOLERANCEMZ=0.01:INTENSITYPERCENT=5 AND MS2PROD=321.26:TOLERANCEMZ=0.01:INTENSITYPERCENT=5 AND MS2PREC=X AND MS2PROD=X-374.2894:TOLERANCEMZ=0.01:INTENSITYPERCENT=5",
@@ -128,6 +132,12 @@ def massql_filter(input_mgf='data/BILELIB19_corrected.mgf', massql_queries=ALL_M
         passed_scan_ls = [str(x) for x in passed_scan_ls]
 
         df[query_name] = df['SCANS'].apply(lambda x: 1 if str(x) in passed_scan_ls else 0)
+
+    # merge 1-OH-Sidechain; 1-OH-core_1 and 1-OH-Sidechain; 1-OH-core_2 and 1-OH-Sidechain; 1-OH-core_3
+    df['1-OH-Sidechain; 1-OH-core'] = df['1-OH-Sidechain; 1-OH-core_1'] | df['1-OH-Sidechain; 1-OH-core_2'] | df[
+        '1-OH-Sidechain; 1-OH-core_3']
+    df.drop(['1-OH-Sidechain; 1-OH-core_1', '1-OH-Sidechain; 1-OH-core_2', '1-OH-Sidechain; 1-OH-core_3'], axis=1,
+            inplace=True)
 
     # save the result
     out_name = input_mgf.replace('.mgf', '_massql.tsv')
