@@ -2,10 +2,8 @@ import graphviz
 from sklearn.tree import export_graphviz
 
 import msms_quality
-import analyze_ms2_library
-import calc_ms2_feature
+from decision_tree import analyze_ms2_library, filter_data, calc_ms2_feature
 import process_BA_labels
-import filter_data
 import train_tree
 import joblib
 import pandas as pd
@@ -151,7 +149,7 @@ def plot_tree(oh_specific=False, stereochem=True, max_depth=None):
         dataset_name = 'data/dataset.joblib' if not stereochem else 'data/dataset_stereo.joblib'
         dtree = joblib.load(model_name)
         dataset = joblib.load(dataset_name)
-        feature_names = np.load('dtree/feature_names.npy')
+        feature_names = np.load('decision_tree/dtree/feature_names.npy')
 
         # Alternatively, visualize the decision tree using graphviz
         dot_data = export_graphviz(dtree, out_file=None,
@@ -173,7 +171,7 @@ def plot_tree(oh_specific=False, stereochem=True, max_depth=None):
             dataset_name = f'data/dataset_{i}.joblib' if not stereochem else f'data/dataset_{i}_stereo.joblib'
             dtree = joblib.load(model_name)
             dataset = joblib.load(dataset_name)
-            feature_names = np.load(f'dtree/feature_names_{i}.npy')
+            feature_names = np.load(f'decision_tree/dtree/feature_names_{i}.npy')
 
             # Alternatively, visualize the decision tree using graphviz
             dot_data = export_graphviz(dtree, out_file=None,
