@@ -1,6 +1,5 @@
 # BA_classification
 
+Determine MS/MS patterns for isomer chemistry of bile acid conjugates.
 
-### pipeline
-* not only bile amidates, also include free bile acids, bile esters
-* no MassQL prefiltering, all bile acids of different numbers of OH are considered
+
