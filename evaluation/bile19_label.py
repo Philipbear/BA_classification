@@ -10,7 +10,7 @@ import pandas as pd
 
 def process_unique_smiles():
 
-    df = pd.read_csv('data/BILELIB19_Names_ok_labaled_IM.csv')
+    df = pd.read_csv('data/label/BILELIB19_Names_ok_labaled_IM.csv')
 
     # dereplicate
     df = df.drop_duplicates(subset=['SMILES']).reset_index(drop=True)
@@ -38,7 +38,7 @@ def process_unique_smiles():
 
 def get_label():
 
-    df = pd.read_csv('data/label/BILELIB19_corrected_massql.tsv', sep='\t')
+    df = pd.read_csv('data/BILELIB19_corrected_massql.tsv', sep='\t')
 
     smiles_df = pd.read_csv('data/label/BILELIB19_SMILES_group.tsv', sep='\t')
     # dictionary of mapping SMILES to group
@@ -49,60 +49,68 @@ def get_label():
     # at least pass mono/di/tri MSQL
     df = df[(df['Monohydroxy'] == 1) | (df['Dihydroxy'] == 1) | (df['Trihydroxy'] == 1)].reset_index(drop=True)
 
+    corrected_df = pd.read_csv('data/label/bilelib19_df_corrected.tsv', sep='\t')
+    # dictionary of mapping NAME to group
+    name_dict = dict(zip(corrected_df['NAME'], corrected_df['group']))
+
+    df['group'] = df['NAME'].map(name_dict)
+
+    df['ADDUCT'] = df['NAME'].apply(lambda x: x.split(' ')[-1])
+
     df.to_csv('data/label/bilelib19_df.tsv', sep='\t', index=False)
 
     print(df['group'][df['Monohydroxy'] == 1].value_counts())
     '''
     group
 3a       8
-3a,6a    3
+3a6a     3
 12a      2
 12b      2
 3keto    1
-3a,7a    1
+3a7a     1
 7b       1
     '''
     print(df['group'][df['Dihydroxy'] == 1].value_counts())
     '''
-    group
-3a,7a        119
-3a,12a       103
-3a,7b         88
-3a,6a         84
-3b,12a         3
-3b,6a          3
-3a             2
-3a,6b          1
-3keto          1
-3a,7a,12a      1
-3a,7a,16a      1
+group
+3a7a       121
+3a12a      103
+3a7b        88
+3a6a        84
+3b12a        3
+3b6a         3
+3a           2
+3a6b         1
+3keto        1
+3a7a12a      1
+3a7a16a      1
     '''
 
     print(df['group'][df['Trihydroxy'] == 1].value_counts())
     '''
-    group
-3a,7a,12a     143
-3a,6a,7a       97
-3a,6b,7b       89
-3a,6b,7a       85
-3b,6b,7a        7
-3a,7b,12a       5
-3a,7a,14a       4
-3a,7b,12b       4
-3a,7a           3
-3a,12keto       2
-3a,7a,16a       2
-3a,12a,16a      2
-3keto,7b        1
-3a,7keto        1
-3keto           1
-3a,6a           1
-3a,4b,7a        1
-3a,6a,7b        1
-3a,7a,12b       1
-3a,7b           1
-3keto,12a       1
-3keto,7a        1
+group
+3a7a12a     165
+3a6a7a       97
+3a6b7b       89
+3a6b7a       85
+3b6b7a        7
+3a7b12a       5
+3a7a14a       4
+3a7b12b       4
+3a7a          3
+3a12keto      2
+3a7a16a       2
+3a12a16a      2
+3keto7b       1
+3a7keto       1
+3keto         1
+3a6a          1
+3a4b7a        1
+3a6a7b        1
+3a7a12b       1
+3a7b          1
+3keto12a      1
+3keto7a       1
     '''
 
 
@@ -115,51 +123,49 @@ def gen_label_stereo(o1b, o2a, o2b, k3, o3a, o3b, o4a, o4b, o6a, o6b, k6, o7a, o
     group_name = ''
 
     if o1b > 0:
-        group_name += '1b,'
+        group_name += '1b'
     if o2a > 0:
-        group_name += '2a,'
+        group_name += '2a'
     if o2b > 0:
-        group_name += '2b,'
+        group_name += '2b'
     if k3 > 0:
-        group_name += '3keto,'
+        group_name += '3keto'
     if o3a > 0:
-        group_name += '3a,'
+        group_name += '3a'
     if o3b > 0:
-        group_name += '3b,'
+        group_name += '3b'
     if o4a > 0:
-        group_name += '4a,'
+        group_name += '4a'
     if o4b > 0:
-        group_name += '4b,'
+        group_name += '4b'
     if o6a > 0:
-        group_name += '6a,'
+        group_name += '6a'
     if o6b > 0:
-        group_name += '6b,'
+        group_name += '6b'
     if k6 > 0:
-        group_name += '6keto,'
+        group_name += '6keto'
     if o7a > 0:
-        group_name += '7a,'
+        group_name += '7a'
     if o7b > 0:
-        group_name += '7b,'
+        group_name += '7b'
     if k7 > 0:
-        group_name += '7keto,'
+        group_name += '7keto'
     if o12a > 0:
-        group_name += '12a,'
+        group_name += '12a'
     if o12b > 0:
-        group_name += '12b,'
+        group_name += '12b'
     if k12 > 0:
-        group_name += '12keto,'
+        group_name += '12keto'
     if o14a > 0:
-        group_name += '14a,'
+        group_name += '14a'
     if o15a > 0:
-        group_name += '15a,'
+        group_name += '15a'
     if o15b > 0:
-        group_name += '15b,'
+        group_name += '15b'
     if o16a > 0:
-        group_name += '16a,'
+        group_name += '16a'
     if k16 > 0:
-        group_name += '16keto,'
-    if group_name:
-        group_name = group_name[:-1]
+        group_name += '16keto'
 
     return group_name
 

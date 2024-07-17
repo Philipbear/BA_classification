@@ -25,6 +25,9 @@ def get_label():
     # rename 3keta7a to 3keto7a
     df['group'] = df['group'].apply(lambda x: x.replace('keta', 'keto'))
 
+    # remove 3a7b, trihydroxy
+    df = df[~((df['group'] == '3a7b') & (df['Trihydroxy'] == 1))]
+
     # save the result
     df.to_csv('data/label/new_core_df.tsv', sep='\t', index=False)
 
@@ -65,7 +68,7 @@ def get_label():
 3keto7a         68
 3a7keto         28
 3a7bDelta22     24
-3a7b            22
+3a7b            22  (delete)
 7a12a            1
     '''
 
