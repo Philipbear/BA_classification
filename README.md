@@ -1,5 +1,5 @@
 # BA_classification
 
-Determine MS/MS patterns for isomer chemistry of bile acid conjugates.
+Determine MS/MS patterns (MassQL) for isomer chemistry of bile acid conjugates.
 
 
