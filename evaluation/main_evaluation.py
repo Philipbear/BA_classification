@@ -27,10 +27,28 @@ di_group_container = {
 
 
 tri_group_container = {
-    '3-OH': ['3a', '3b'],
-    '3a-OH': ['3a'],
-    '7a-OH': ['7a'],
-    '7b-OH': ['7b'],
+    # '1-OH-Sidechain; 2-OH-core 1-DB-Sidechain; 2-OH-core': [[], []],
+    # '22D; 2-OH-core': [[], []],
+    # '22S; 2-OH-core': [[], []],
+    # '23R; 2-OH-core': [[], []],
+    '3a7k': [['3a7k'], []],
+    '3k7a': [['3k7a'], []],
+    '3a12k': [['3a12k'], []],
+    '3k12a': [['3k12a'], []],
+    '3,7b,12b-OH': [[], []],
+    '3,7a,12b-OH': [[], []],
+    '3,7b,12a-OH': [[], []],
+    '3,7a,12a-OH/Allo-3,7a,12a': [[], []],
+    '3,7a,12a-OH': [[], []],
+    'Allo-3,7a,12a-OH': [[], []],
+    '3,6,7-OH; 3,4,7-OH': [[], []],
+    '3,4,7-OH': [[], []],
+    '3,6,7-OH': [[], []],
+    '3,6b,7b-OH': [[], []],
+    '3,6a,7a-OH': [[], []],
+    '3,6b,7a-OH; 3,6a,7b-OH': [[], []],
+    '3,6b,7a-OH': [[], []],
+    '3,6a,7b-OH': [[], []]
 }
 
 
@@ -107,4 +125,6 @@ def main_evaluation(group='mono'):
 if __name__ == '__main__':
     # main_evaluation('mono')
 
-    main_evaluation('di')
+    # main_evaluation('di')
+
+    main_evaluation('tri')
