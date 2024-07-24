@@ -123,8 +123,8 @@ def main_evaluation(group='mono'):
 
 
 if __name__ == '__main__':
-    # main_evaluation('mono')
+    main_evaluation('mono')
 
     # main_evaluation('di')
 
-    main_evaluation('tri')
+    # main_evaluation('tri')
