@@ -26,29 +26,45 @@ di_group_container = {
 }
 
 
+# tri_group_container = {
+#     # '1-OH-Sidechain; 2-OH-core 1-DB-Sidechain; 2-OH-core': [[], []],
+#     # '22D; 2-OH-core': [[], []],
+#     # '22S; 2-OH-core': [[], []],
+#     # '23R; 2-OH-core': [[], []],
+#     '3a7k': [['3a7k'], ['3a7keto']],
+#     '3k7a': [['3k7a'], ['3keto7a']],
+#     '3a12k': [['3a12k'], ['3a12keto']],
+#     '3k12a': [['3k12a'], ['3keto12a']],
+#     '3,7b,12b-OH': [['3,7b,12b-OH'], ['3a7b12b', '3b7b12b']],
+#     '3,7a,12b-OH': [['3,7a,12b-OH'], ['3a7a12b', '3b7a12b']],
+#     '3,7b,12a-OH': [['3,7b,12a-OH'], ['3a7b12a', '3b7b12a']],
+#     # '3,7a,12a-OH/Allo-3,7a,12a': [['3,7a,12a-OH/Allo-3,7a,12a'], ['3a7a12a', '3b7a12a']],
+#     '3,7a,12a-OH': [['3,7a,12a-OH/Allo-3,7a,12a', '3,7a,12a-OH'], ['3a7a12a', '3b7a12a']],
+#     # 'Allo-3,7a,12a-OH': [['3,7a,12a-OH/Allo-3,7a,12a', 'Allo-3,7a,12a-OH'], []],
+#     '3,6,7-OH; 3,4,7-OH': [['3,6,7-OH; 3,4,7-OH'], ['3a6a7a', '3a6a7b', '3a6b7a', '3a6b7b', '3b6a7a', '3b6a7b', '3b6b7a', '3b6b7b', '3a4a7a', '3a4a7b', '3a4b7a', '3a4b7b', '3b4a7a', '3b4a7b', '3b4b7a', '3b4b7b']],
+#     '3,4,7-OH': [['3,6,7-OH; 3,4,7-OH', '3,4,7-OH'], ['3a4a7a', '3a4a7b', '3a4b7a', '3a4b7b', '3b4a7a', '3b4a7b', '3b4b7a', '3b4b7b']],
+#     '3,6,7-OH': [['3,6,7-OH; 3,4,7-OH', '3,6,7-OH'], ['3a6a7a', '3a6a7b', '3a6b7a', '3a6b7b', '3b6a7a', '3b6a7b', '3b6b7a', '3b6b7b']],
+#     '3,6b,7b-OH': [['3,6,7-OH; 3,4,7-OH', '3,6,7-OH', '3,6b,7b-OH'], ['3a6b7b', '3b6b7b']],
+#     '3,6a,7a-OH': [['3,6,7-OH; 3,4,7-OH', '3,6,7-OH', '3,6a,7a-OH'], ['3a6a7a', '3b6a7a']],
+#     '3,6b,7a-OH; 3,6a,7b-OH': [['3,6,7-OH; 3,4,7-OH', '3,6,7-OH', '3,6b,7a-OH; 3,6a,7b-OH'], ['3a6b7a', '3b6b7a', '3a6a7b', '3b6a7b']],
+#     '3,6b,7a-OH': [['3,6,7-OH; 3,4,7-OH', '3,6,7-OH', '3,6b,7a-OH; 3,6a,7b-OH', '3,6b,7a-OH'], ['3a6b7a', '3b6b7a']],
+#     '3,6a,7b-OH': [['3,6,7-OH; 3,4,7-OH', '3,6,7-OH', '3,6b,7a-OH; 3,6a,7b-OH', '3,6a,7b-OH'], ['3a6a7b', '3b6a7b']],
+# }
+
+
 tri_group_container = {
-    # '1-OH-Sidechain; 2-OH-core 1-DB-Sidechain; 2-OH-core': [[], []],
-    # '22D; 2-OH-core': [[], []],
-    # '22S; 2-OH-core': [[], []],
-    # '23R; 2-OH-core': [[], []],
-    '3a7k': [['3a7k'], ['3a7keto']],
-    '3k7a': [['3k7a'], ['3keto7a']],
-    '3a12k': [['3a12k'], ['3a12keto']],
-    '3k12a': [['3k12a'], ['3keto12a']],
-    '3,7b,12b-OH': [['3,7b,12b-OH'], ['3a7b12b', '3b7b12b']],
-    '3,7a,12b-OH': [['3,7a,12b-OH'], ['3a7a12b', '3b7a12b']],
-    '3,7b,12a-OH': [['3,7b,12a-OH'], ['3a7b12a', '3b7b12a']],
-    # '3,7a,12a-OH/Allo-3,7a,12a': [['3,7a,12a-OH/Allo-3,7a,12a'], ['3a7a12a', '3b7a12a']],
-    '3,7a,12a-OH': [['3,7a,12a-OH/Allo-3,7a,12a', '3,7a,12a-OH'], ['3a7a12a', '3b7a12a']],
-    # 'Allo-3,7a,12a-OH': [['3,7a,12a-OH/Allo-3,7a,12a', 'Allo-3,7a,12a-OH'], []],
-    '3,6,7-OH; 3,4,7-OH': [['3,6,7-OH; 3,4,7-OH'], ['3a6a7a', '3a6a7b', '3a6b7a', '3a6b7b', '3b6a7a', '3b6a7b', '3b6b7a', '3b6b7b', '3a4a7a', '3a4a7b', '3a4b7a', '3a4b7b', '3b4a7a', '3b4a7b', '3b4b7a', '3b4b7b']],
-    '3,4,7-OH': [['3,6,7-OH; 3,4,7-OH', '3,4,7-OH'], ['3a4a7a', '3a4a7b', '3a4b7a', '3a4b7b', '3b4a7a', '3b4a7b', '3b4b7a', '3b4b7b']],
-    '3,6,7-OH': [['3,6,7-OH; 3,4,7-OH', '3,6,7-OH'], ['3a6a7a', '3a6a7b', '3a6b7a', '3a6b7b', '3b6a7a', '3b6a7b', '3b6b7a', '3b6b7b']],
-    '3,6b,7b-OH': [['3,6,7-OH; 3,4,7-OH', '3,6,7-OH', '3,6b,7b-OH'], ['3a6b7b', '3b6b7b']],
-    '3,6a,7a-OH': [['3,6,7-OH; 3,4,7-OH', '3,6,7-OH', '3,6a,7a-OH'], ['3a6a7a', '3b6a7a']],
-    '3,6b,7a-OH; 3,6a,7b-OH': [['3,6,7-OH; 3,4,7-OH', '3,6,7-OH', '3,6b,7a-OH; 3,6a,7b-OH'], ['3a6b7a', '3b6b7a', '3a6a7b', '3b6a7b']],
-    '3,6b,7a-OH': [['3,6,7-OH; 3,4,7-OH', '3,6,7-OH', '3,6b,7a-OH; 3,6a,7b-OH', '3,6b,7a-OH'], ['3a6b7a', '3b6b7a']],
-    '3,6a,7b-OH': [['3,6,7-OH; 3,4,7-OH', '3,6,7-OH', '3,6b,7a-OH; 3,6a,7b-OH', '3,6a,7b-OH'], ['3a6a7b', '3b6a7b']],
+    'All_ketone': [['All_ketone'], ['3keto7a', '3a7keto', '3a7bDelta22', '3a12keto', '3keto7b', '3a7keto']],
+    '3k_7or12_OH': [['All_ketone', '3k_7or12_OH'], ['3keto7a', '3keto7b', '3keto12a', '3keto12b']],
+    '3a_12k': [['All_ketone', '3a_12k'], ['3a12keto']],
+
+    '3,7a,12a': [['3,7a,12a'], ['3a7a12a', '3b7a12a']],
+
+    '3,6,7-OH': [['3,6,7-OH'], ['3a6a7a', '3a6a7b', '3a6b7a', '3a6b7b', '3b6a7a', '3b6a7b', '3b6b7a', '3b6b7b']],
+    '3,6b,7b-OH': [['3,6,7-OH', '3,6b,7b-OH'], ['3a6b7b', '3b6b7b']],
+    '3,6a,7a-OH': [['3,6,7-OH', '3,6a,7a-OH'], ['3a6a7a', '3b6a7a']],
+    '3,6b,7a-OH; 3,6a,7b-OH': [['3,6,7-OH', '3,6b,7a-OH; 3,6a,7b-OH'], ['3a6b7a', '3b6b7a', '3a6a7b', '3b6a7b']],
+    '3,6b,7a-OH': [['3,6,7-OH', '3,6b,7a-OH; 3,6a,7b-OH', '3,6b,7a-OH'], ['3a6b7a', '3b6b7a']],
+    '3,6a,7b-OH': [['3,6,7-OH', '3,6b,7a-OH; 3,6a,7b-OH', '3,6a,7b-OH'], ['3a6a7b', '3b6a7b']],
 }
 
 
@@ -123,8 +139,8 @@ def main_evaluation(group='mono'):
 
 
 if __name__ == '__main__':
-    main_evaluation('mono')
+    # main_evaluation('mono')
 
     # main_evaluation('di')
 
-    # main_evaluation('tri')
+    main_evaluation('tri')
