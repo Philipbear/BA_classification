@@ -1,7 +1,7 @@
-# BA_classification evaluation
+# BA_classification FDR evaluation
 
 
 ## pipeline
-- MassQL _msql scripts
-- run _label scripts
-- run _evaluation scripts
+- `_msql` scripts: perform MassQL queries
+- `_label` scripts: label ground truths
+- `main_evaluation`: FDR evaluation
