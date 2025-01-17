@@ -1,5 +1,8 @@
 # BA_classification
 
-Determine MS/MS patterns (MassQL) for isomer chemistry of bile acid conjugates.
+MassQL queries for bile acid isomer chemistry.
 
 
+- FDR evaluation of MassQL queries: `evaluation` folder
+
+- Library generation: `library_generation` folder
