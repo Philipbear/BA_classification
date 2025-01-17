@@ -8,69 +8,46 @@ def get_label():
     # read the library
     df = pd.read_csv('data/new_core_corrected_massql.tsv', sep='\t')
 
-    # at least pass mono/di/tri MSQL
-    df = df[(df['Monohydroxy'] == 1) | (df['Dihydroxy'] == 1) | (df['Trihydroxy'] == 1)].reset_index(drop=True)
-
     # for the NAME column, romove '_NCE45' if it exists
     df['_NAME'] = df['NAME'].apply(lambda x: x.replace('_NCE45', ''))
 
-    # # if '_' in the name, it is not a free BA
-    # df['free_BA'] = df['_NAME'].apply(lambda x: 0 if '_' in x else 1)
-
     df['group'] = df['_NAME'].apply(lambda x: x.split('_')[0] if '_' in x else x)
-
-    df['group'] = df['group'].apply(lambda x: x.replace('beta', 'b'))
-    df['group'] = df['group'].apply(lambda x: x.replace('alpha', 'a'))
 
     # rename 3keta7a to 3keto7a
     df['group'] = df['group'].apply(lambda x: x.replace('keta', 'keto'))
 
+    # label ground truths for mono, di, tri
+    def get_oh_gt(name):
+        total = 0
+        # Convert to lowercase for case-insensitive matching
+        text = name.lower()
+        # Count occurrences using string methods
+        total += text.count('alpha')
+        total += text.count('beta')
+        total += text.count('delta')
+        total += 2 * text.count('keto')
+        return total
+
+    df['oh_gt'] = df['group'].apply(lambda x: get_oh_gt(x))
+
+    # label ground truths for mono, di, tri
+    df['mono_gt'] = df['oh_gt'].apply(lambda x: 1 if x == 1 else 0)
+    df['di_gt'] = df['oh_gt'].apply(lambda x: 1 if x == 2 else 0)
+    df['tri_gt'] = df['oh_gt'].apply(lambda x: 1 if x == 3 else 0)
+
+    # should be either mono/di/tri BAs
+    df = df[(df['mono_gt'] == 1) | (df['di_gt'] == 1) | (df['tri_gt'] == 1)].reset_index(drop=True)
+
+    df['group'] = df['group'].apply(lambda x: x.replace('beta', 'b'))
+    df['group'] = df['group'].apply(lambda x: x.replace('alpha', 'a'))
+
     # remove 3a7b, trihydroxy
     df = df[~((df['group'] == '3a7b') & (df['Trihydroxy'] == 1))]
 
+    df['di_1_sc_oh'] = 0
+
     # save the result
     df.to_csv('data/label/new_core_df.tsv', sep='\t', index=False)
-
-    print(df['group'][df['Monohydroxy'] == 1].value_counts())
-    '''
-    group
-3a    47
-7b    33
-7a    30
-3b    24
-    '''
-
-    print(df['group'][df['Dihydroxy'] == 1].value_counts())
-    '''
-    group
-3a6a     90
-3a12b    80
-3b12a    78
-3b12b    75
-3b7a     67
-7a12a    55
-3a7b      1
-3a        1
-    '''
-
-    print(df['group'][df['Trihydroxy'] == 1].value_counts())
-    '''
-    group
-3a6a7a         124
-3b7a12a        124
-3a6b7b         111
-3a7b12a        108
-3b7b12a        100
-3a7b12b         92
-3a7a12b         92
-3b7b12b         92
-3a7a16a         85
-3keto7a         68
-3a7keto         28
-3a7bDelta22     24
-3a7b            22  (delete)
-7a12a            1
-    '''
 
 
 if __name__ == '__main__':

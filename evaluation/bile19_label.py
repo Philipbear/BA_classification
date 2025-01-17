@@ -30,7 +30,15 @@ def process_unique_smiles():
                                                       x['[12*]=O'], x['[14*]O_alpha'], x['[15*]O_alpha'],
                                                       x['[15*]O_beta'], x['[16*]O_alpha'], x['[16*]=O']), axis=1)
 
-    df = df[['SMILES', 'group']]
+    # ground truth
+    df['mono_gt'] = df['[*]O'].apply(lambda x: 1 if x == 1 else 0)
+    df['di_gt'] = df['[*]O'].apply(lambda x: 1 if x == 2 else 0)
+    df['tri_gt'] = df['[*]O'].apply(lambda x: 1 if x == 3 else 0)
+
+    #### Di, 1-SC-OH ############### any of the 3 queries
+    df['di_1_sc_oh'] = df['BA_Class'].apply(lambda x: 1 if x == 'Dihydroxy, 1_SC_OH' else 0)
+
+    df = df[['SMILES', 'group', 'mono_gt', 'di_gt', 'tri_gt', 'di_1_sc_oh']]
 
     # save the df
     df.to_csv('data/label/BILELIB19_SMILES_group.tsv', sep='\t', index=False)
@@ -41,13 +49,22 @@ def get_label():
     df = pd.read_csv('data/BILELIB19_corrected_massql.tsv', sep='\t')
 
     smiles_df = pd.read_csv('data/label/BILELIB19_SMILES_group.tsv', sep='\t')
+
     # dictionary of mapping SMILES to group
     smiles_dict = dict(zip(smiles_df['SMILES'], smiles_df['group']))
+    mono_gt_dict = dict(zip(smiles_df['SMILES'], smiles_df['mono_gt']))
+    di_gt_dict = dict(zip(smiles_df['SMILES'], smiles_df['di_gt']))
+    tri_gt_dict = dict(zip(smiles_df['SMILES'], smiles_df['tri_gt']))
+    di_1_sc_oh_dict = dict(zip(smiles_df['SMILES'], smiles_df['di_1_sc_oh']))
 
     df['group'] = df['SMILES'].map(smiles_dict)
+    df['mono_gt'] = df['SMILES'].map(mono_gt_dict)
+    df['di_gt'] = df['SMILES'].map(di_gt_dict)
+    df['tri_gt'] = df['SMILES'].map(tri_gt_dict)
+    df['di_1_sc_oh'] = df['SMILES'].map(di_1_sc_oh_dict)
 
-    # at least pass mono/di/tri MSQL
-    df = df[(df['Monohydroxy'] == 1) | (df['Dihydroxy'] == 1) | (df['Trihydroxy'] == 1)].reset_index(drop=True)
+    # should be either mono/di/tri BAs
+    df = df[(df['mono_gt'] == 1) | (df['di_gt'] == 1) | (df['tri_gt'] == 1)].reset_index(drop=True)
 
     corrected_df = pd.read_csv('data/label/bilelib19_df_corrected.tsv', sep='\t')
     # dictionary of mapping NAME to group
@@ -58,60 +75,6 @@ def get_label():
     df['ADDUCT'] = df['NAME'].apply(lambda x: x.split(' ')[-1])
 
     df.to_csv('data/label/bilelib19_df.tsv', sep='\t', index=False)
-
-    print(df['group'][df['Monohydroxy'] == 1].value_counts())
-    '''
-    group
-3a       8
-3a6a     3
-12a      2
-12b      2
-3keto    1
-3a7a     1
-7b       1
-    '''
-    print(df['group'][df['Dihydroxy'] == 1].value_counts())
-    '''
-group
-3a7a       121
-3a12a      103
-3a7b        88
-3a6a        84
-3b12a        3
-3b6a         3
-3a           2
-3a6b         1
-3keto        1
-3a7a12a      1
-3a7a16a      1
-    '''
-
-    print(df['group'][df['Trihydroxy'] == 1].value_counts())
-    '''
-group
-3a7a12a     165
-3a6a7a       97
-3a6b7b       89
-3a6b7a       85
-3b6b7a        7
-3a7b12a       5
-3a7a14a       4
-3a7b12b       4
-3a7a          3
-3a12keto      2
-3a7a16a       2
-3a12a16a      2
-3keto7b       1
-3a7keto       1
-3keto         1
-3a6a          1
-3a4b7a        1
-3a6a7b        1
-3a7a12b       1
-3a7b          1
-3keto12a      1
-3keto7a       1
-    '''
 
 
 def gen_label_stereo(o1b, o2a, o2b, k3, o3a, o3b, o4a, o4b, o6a, o6b, k6, o7a, o7b, k7, o12a, o12b, k12, o14a,
