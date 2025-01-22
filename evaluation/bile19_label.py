@@ -38,7 +38,9 @@ def process_unique_smiles():
     #### Di, 1-SC-OH ############### any of the 3 queries
     df['di_1_sc_oh'] = df['BA_Class'].apply(lambda x: 1 if x == 'Dihydroxy, 1_SC_OH' else 0)
 
-    df = df[['SMILES', 'group', 'mono_gt', 'di_gt', 'tri_gt', 'di_1_sc_oh']]
+    df['amide'] = df['tail_has'].apply(lambda x: 1 if x == 'Amide' else 0)
+
+    df = df[['SMILES', 'group', 'mono_gt', 'di_gt', 'tri_gt', 'di_1_sc_oh', 'amide']]
 
     # save the df
     df.to_csv('data/label/BILELIB19_SMILES_group.tsv', sep='\t', index=False)
@@ -56,15 +58,20 @@ def get_label():
     di_gt_dict = dict(zip(smiles_df['SMILES'], smiles_df['di_gt']))
     tri_gt_dict = dict(zip(smiles_df['SMILES'], smiles_df['tri_gt']))
     di_1_sc_oh_dict = dict(zip(smiles_df['SMILES'], smiles_df['di_1_sc_oh']))
+    amide_dict = dict(zip(smiles_df['SMILES'], smiles_df['amide']))
 
     df['group'] = df['SMILES'].map(smiles_dict)
     df['mono_gt'] = df['SMILES'].map(mono_gt_dict)
     df['di_gt'] = df['SMILES'].map(di_gt_dict)
     df['tri_gt'] = df['SMILES'].map(tri_gt_dict)
     df['di_1_sc_oh'] = df['SMILES'].map(di_1_sc_oh_dict)
+    df['amide'] = df['SMILES'].map(amide_dict)
 
     # should be either mono/di/tri BAs
     df = df[(df['mono_gt'] == 1) | (df['di_gt'] == 1) | (df['tri_gt'] == 1)].reset_index(drop=True)
+
+    # should be amide
+    df = df[df['amide'] == 1].reset_index(drop=True)
 
     corrected_df = pd.read_csv('data/label/bilelib19_df_corrected.tsv', sep='\t')
     # dictionary of mapping NAME to group
@@ -134,6 +141,6 @@ def gen_label_stereo(o1b, o2a, o2b, k3, o3a, o3b, o4a, o4b, o6a, o6b, k6, o7a, o
 
 
 if __name__ == '__main__':
-    # process_unique_smiles()
+    process_unique_smiles()
 
     get_label()
