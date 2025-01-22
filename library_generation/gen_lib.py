@@ -34,6 +34,9 @@ def load_csv(dir_path):
 
         all_df = pd.concat([all_df, this_df])
 
+    # remove rows whose id is duplicated
+    all_df = all_df[~all_df.duplicated(subset='id')]
+
     return all_df
 
 
@@ -89,8 +92,6 @@ def add_ms2():
     # For di spectra
     spectra_from_path = list(load_from_mgf('data/di_nowaterloss_stage2_result_merged.mgf'))
     for spec in tqdm(spectra_from_path):
-        if spec.metadata['scans'] == '506':
-            print('here')
         mask = (df['id'].str.startswith('di_')) & (df['stage2_merged_scan'] == int(spec.metadata['scans']))
         if mask.any():
             first_match_idx = df.index[mask][0]
@@ -106,7 +107,6 @@ def add_ms2():
             peaks = np.column_stack((spec.peaks.mz, spec.peaks.intensities))
             df.at[first_match_idx, 'peaks'] = peaks
 
-    print(df.loc[df['peaks'].isna(), 'id'])
     df.to_csv('out/merged_db_all_metadata_with_ms2.tsv', sep='\t', index=False)
     df.to_pickle('out/merged_db_all_metadata_with_ms2.pkl')
 
@@ -189,9 +189,9 @@ if __name__ == '__main__':
 
     # merge_df()
 
-    add_ms2()
+    # add_ms2()
 
-    # create_gnps_files()
+    create_gnps_files()
 
 
 
